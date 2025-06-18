@@ -20,9 +20,9 @@ return new class extends Migration
             $table->string('divisi');
             $table->string('penempatan');
             $table->string('email')->unique(); // buat login atau presensi
-            $table->string('password')->after('email');
+            $table->string('password');
             $table->string('jabatan')->nullable();
-
+            $table->string('role')->default('karyawan');
             $table->timestamps();
         });
     }

@@ -172,7 +172,7 @@ class AdminController
             'penempatan' => 'sometimes|required|string|max:100',
             'email'      => 'sometimes|required|email|ends_with:@constmg.com|unique:karyawan,email,' . $id,
             // 'role'       => 'sometimes|required|in:karyawan,admin'
-            // 'password'   => 'sometimes|required|string|min:6',
+            'password'   => 'sometimes|required|string|min:6',
         ]);
 
 
