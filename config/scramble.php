@@ -91,7 +91,7 @@ return [
      * ```
      */
     'servers' => [
-        'url' => 'https://backend-constmg-production.up.railway.app/api',
+        // 'url' => 'https://backend-constmg-production.up.railway.app/api',
         // 'description' => 'Production',
     ],
 
