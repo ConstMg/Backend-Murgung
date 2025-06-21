@@ -16,10 +16,12 @@ return new class extends Migration
             $table->unsignedBigInteger('karyawan_id');
             $table->date('tanggal');
             $table->time('jam_masuk')->nullable();
-            $table->time('jam_keluar')->nullable();
+            $table->time('jam_keluar')->nullable()->change();
             $table->enum('status_presensi', ['Hadir', 'Izin', 'Sakit', 'Alpa'])->default('Hadir'); // Menambahkan kolom status_presensi
+            $table->text('deskripsi')->nullable(); // Menambahkan kolom deskripsi
             $table->decimal('latitude', 10, 7)->nullable();   // Lokasi latitude
             $table->decimal('longitude', 10, 7)->nullable();  // Lokasi longitude
+           
             $table->timestamps();
 
             // Menambahkan foreign key karyawan_id

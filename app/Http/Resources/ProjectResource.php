@@ -18,6 +18,11 @@ class ProjectResource extends JsonResource
             'project_id' => $this->id,
             'project_name' => $this->name,
             'deskripsi' => $this->deskripsi ?? '-',
+            'pemberi_kerja' => $this->pemberi_kerja ?? '-',
+            'tanggal_dimulai_proyek' => $this->tanggal_dimulai_proyek ?? '-',
+            'tanggal_selesai_proyek' => $this->tanggal_selesai_proyek ?? '-',
+            'kategori' => $this->kategori ?? '-',
+            'nilai_kontrak' => $this->nilai_kontrak ?? '-',
             'images' => $this->images->map(function ($image) {
                 return [
                     'public_id' => $image->public_id,

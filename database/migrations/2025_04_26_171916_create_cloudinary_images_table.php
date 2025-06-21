@@ -19,7 +19,13 @@ return new class extends Migration
             $table->string('display_name');
             $table->string('url');
             $table->string('secure_url');
-            $table->string('project_name')->nullable();
+
+            $table->unsignedBigInteger('project_id')->nullable();
+            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
+
+            $table->unsignedBigInteger('profile_id')->nullable(); // pastikan relasi ke profile (jika ada)
+            $table->string('image_type')->nullable();
+
             $table->timestamps();
         });
     }

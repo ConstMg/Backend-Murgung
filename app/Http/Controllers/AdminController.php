@@ -260,15 +260,20 @@ class AdminController
         $validated = $request->validate([
             'name' => 'nullable|string',
             'limit' => 'nullable|integer|min:1|max:100',
+            'kategori' => 'nullable|string',
         ]);
 
         $name = $validated['name'] ?? null;
         $limit = $validated['limit'] ?? null;
+        $kategori = $validated['kategori'] ?? null;
 
         // Query project dengan relasi gambar
         $query = Project::with('images')
             ->when($name, function ($q) use ($name) {
                 $q->where('name', 'like', '%' . $name . '%');
+            })
+            ->when($kategori, function ($q) use ($kategori) {
+                $q->where('kategori', $kategori);
             })
             ->orderBy('id', 'desc');
 
@@ -278,8 +283,11 @@ class AdminController
         // Jika tidak ada data
         if ($projects->isEmpty()) {
             return response()->json([
-                'message' => $name
-                    ? "Tidak ada project yang cocok dengan kata kunci '{$name}'"
+                'message' => $name || $kategori
+                    ? "Tidak ada project yang cocok dengan "
+                    . ($name ? "nama '{$name}'" : '')
+                    . ($name && $kategori ? " dan " : '')
+                    . ($kategori ? "kategori '{$kategori}'" : '')
                     : 'Tidak ada data project tersedia',
                 'error' => 404
             ], 404);
@@ -290,6 +298,7 @@ class AdminController
             'data' => ProjectResource::collection($projects),
         ]);
     }
+
 
 
     public function updateProject(Request $request, $id)
@@ -307,8 +316,13 @@ class AdminController
 
         // Validasi input
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'nama_project' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
+            'pemberi_kerja' => 'nullable|string',
+            'tanggal_dimulai_proyek' => 'nullable|date',
+            'tanggal_selesai_proyek' => 'nullable|date|after_or_equal:tanggal_dimulai_proyek',
+            'kategori' => 'nullable|string',
+            'nilai_kontrak' => 'nullable|integer|min:0'
         ]);
 
         $project->update($validated);
@@ -398,7 +412,12 @@ class AdminController
         // }
         $validator = Validator::make($request->all(), [
             'nama_project' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string'
+            'deskripsi' => 'nullable|string',
+            'pemberi_kerja' => 'nullable|string',
+            'tanggal_dimulai_proyek' => 'nullable|date',
+            'tanggal_selesai_proyek' => 'nullable|date|after_or_equal:tanggal_dimulai_proyek',
+            'kategori' => 'nullable|string',
+            'nilai_kontrak' => 'nullable|integer|min:0'
         ]);
 
         if ($validator->fails()) {

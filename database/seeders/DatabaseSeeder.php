@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             karyawanSeeder::class,
             CloudinaryImagesSeeder::class,
             ProfileSeeder::class,
+            ProjectSeeder::class,
         ]);
     }
 }

@@ -110,36 +110,39 @@ class CloudinaryController
         $validated = $request->validate([
             'name' => 'nullable|string',
             'limit' => 'nullable|integer|min:1|max:100',
+            'kategori' => 'nullable|string',
         ]);
 
         $name = $validated['name'] ?? null;
         $limit = $validated['limit'] ?? null;
+        $kategori = $validated['kategori'] ?? null;
 
-        // Query project dengan relasi 'images'
-        $query = Project::with('images');
+        // Query project dengan relasi gambar
+        $query = Project::with('images')
+            ->when($name, function ($q) use ($name) {
+                $q->where('name', 'like', '%' . $name . '%');
+            })
+            ->when($kategori, function ($q) use ($kategori) {
+                $q->where('kategori', $kategori);
+            })
+            ->orderBy('id', 'desc');
 
-        // Filter jika ada parameter 'name'
-        if ($name) {
-            $query->where('name', 'like', '%' . $name . '%');
-        }
-
-        // Urutkan dari terbaru
-        $query->orderBy('id', 'desc');
-
-        // Ambil data dengan atau tanpa limit
+        // Ambil semua atau dibatasi limit
         $projects = $limit ? $query->take($limit)->get() : $query->get();
 
         // Jika tidak ada data
         if ($projects->isEmpty()) {
             return response()->json([
-                'message' => $name
-                    ? "Tidak ada project yang cocok dengan kata kunci '{$name}'"
+                'message' => $name || $kategori
+                    ? "Tidak ada project yang cocok dengan "
+                    . ($name ? "nama '{$name}'" : '')
+                    . ($name && $kategori ? " dan " : '')
+                    . ($kategori ? "kategori '{$kategori}'" : '')
                     : 'Tidak ada data project tersedia',
                 'error' => 404
             ], 404);
         }
 
-        // Kirim response menggunakan Resource
         return response()->json([
             'message' => 'Berhasil mengambil data project beserta gambarnya',
             'data' => ProjectResource::collection($projects),
