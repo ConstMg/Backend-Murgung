@@ -303,7 +303,6 @@ class AdminController
 
     public function updateProject(Request $request, $id)
     {
-
         // Cari project berdasarkan ID
         $project = Project::find($id);
 
@@ -314,30 +313,38 @@ class AdminController
             ], 404);
         }
 
-        // Validasi input
-        $validated = $request->validate([
-            'nama_project' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'pemberi_kerja' => 'nullable|string',
-            'tanggal_dimulai_proyek' => 'nullable|date',
-            'tanggal_selesai_proyek' => 'nullable|date|after_or_equal:tanggal_dimulai_proyek',
-            'kategori' => 'nullable|string',
-            'nilai_kontrak' => 'nullable|integer|min:0'
-        ]);
+        // Validasi input dengan custom messages
+        $validated = $request->validate(
+            [
+                'name' => 'required|string|max:255',
+                'deskripsi' => 'nullable|string',
+                'pemberi_kerja' => 'nullable|string',
+                'tanggal_dimulai_proyek' => 'nullable|date',
+                'tanggal_selesai_proyek' => 'nullable|date|after_or_equal:tanggal_dimulai_proyek',
+                'kategori' => 'nullable|string',
+                'nilai_kontrak' => 'nullable|integer|min:0'
+            ],
+            [
+                'name.required' => 'Nama proyek wajib diisi.',
+                'name.max' => 'Nama proyek tidak boleh lebih dari 255 karakter.',
+                'tanggal_dimulai_proyek.date' => 'Tanggal dimulai harus berupa tanggal yang valid.',
+                'tanggal_selesai_proyek.date' => 'Tanggal selesai harus berupa tanggal yang valid.',
+                'tanggal_selesai_proyek.after_or_equal' => 'Tanggal selesai tidak boleh lebih awal dari tanggal dimulai.',
+                'nilai_kontrak.integer' => 'Nilai kontrak harus berupa angka.',
+                'nilai_kontrak.min' => 'Nilai kontrak tidak boleh bernilai negatif.'
+            ]
+        );
 
+        // Update project
         $project->update($validated);
 
         return response()->json([
-            'message' => "Project '{$project->name}' berhasil diperbarui",
-            'data' => [
-                'id' => $project->id,
-                'name' => $project->name,
-                'created_at' => $project->created_at,
-                'updated_at' => $project->updated_at,
-                'deskripsi' => $project->deskripsi,
-            ]
+            'message' => "Project '{$project->nama_project}' berhasil diperbarui",
+            'data' => $project
         ]);
     }
+
+
 
     public function deleteProject($id)
     {
@@ -403,30 +410,45 @@ class AdminController
     //Project
     public function addProject(Request $request)
     {
-        // $request->validate([
-        //     'akses' => 'required|in:admin'
-        // ]);
-
-        // if ($response = $this->checkRole()) {
-        //     return $response;
-        // }
-        $validator = Validator::make($request->all(), [
-            'nama_project' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'pemberi_kerja' => 'nullable|string',
-            'tanggal_dimulai_proyek' => 'nullable|date',
-            'tanggal_selesai_proyek' => 'nullable|date|after_or_equal:tanggal_dimulai_proyek',
-            'kategori' => 'nullable|string',
-            'nilai_kontrak' => 'nullable|integer|min:0'
-        ]);
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'nama_project' => 'required|string|max:255',
+                'deskripsi' => 'nullable|string',
+                'pemberi_kerja' => 'nullable|string',
+                'tanggal_dimulai_proyek' => 'nullable|date',
+                'tanggal_selesai_proyek' => 'nullable|date|after_or_equal:tanggal_dimulai_proyek',
+                'kategori' => 'nullable|string',
+                'nilai_kontrak' => 'nullable|integer|min:0'
+            ],
+            [
+                'nama_project.required' => 'Nama proyek wajib diisi.',
+                'nama_project.max' => 'Nama proyek tidak boleh lebih dari 255 karakter.',
+                'tanggal_dimulai_proyek.date' => 'Tanggal dimulai harus berupa tanggal yang valid.',
+                'tanggal_selesai_proyek.date' => 'Tanggal selesai harus berupa tanggal yang valid.',
+                'tanggal_selesai_proyek.after_or_equal' => 'Tanggal selesai tidak boleh lebih awal dari tanggal dimulai.',
+                'nilai_kontrak.integer' => 'Nilai kontrak harus berupa angka.',
+                'nilai_kontrak.min' => 'Nilai kontrak tidak boleh bernilai negatif.'
+            ]
+        );
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json([
+                'message' => 'Validasi gagal.',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         try {
             $project = Project::firstOrNew(['name' => $request->nama_project]);
-            $project->deskripsi = $request->deskripsi;
+            $project->fill($request->only([
+                'deskripsi',
+                'pemberi_kerja',
+                'tanggal_dimulai_proyek',
+                'tanggal_selesai_proyek',
+                'kategori',
+                'nilai_kontrak',
+            ]));
             $project->save();
 
             return response()->json([
@@ -435,6 +457,11 @@ class AdminController
                     'project_id' => $project->id,
                     'nama_project' => $project->name,
                     'deskripsi' => $project->deskripsi,
+                    'pemberi_kerja' => $project->pemberi_kerja,
+                    'tanggal_dimulai_proyek' => $project->tanggal_dimulai_proyek,
+                    'tanggal_selesai_proyek' => $project->tanggal_selesai_proyek,
+                    'kategori' => $project->kategori,
+                    'nilai_kontrak' => $project->nilai_kontrak
                 ]
             ]);
         } catch (\Exception $e) {

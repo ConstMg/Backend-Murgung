@@ -11,7 +11,12 @@ class Project extends Model
 
     protected $fillable = [
         'name',
-        "deskripsi"
+        "deskripsi",
+        'pemberi_kerja',
+        'tanggal_dimulai_proyek',
+        'tanggal_selesai_proyek',
+        'kategori',
+        'nilai_kontrak',
     ];
 
 
