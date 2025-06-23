@@ -28,7 +28,8 @@ class AuthenticationController
         // Cek apakah user ditemukan dan password cocok (HASHING)
         // if ($karyawan && Hash::check($request->password, $karyawan->password)) {
         //NO HASHING
-        if ($karyawan && $request->password === $karyawan->password) {
+
+        if ($karyawan && Hash::make($request->password) === $karyawan->password) {
 
             // Generate token
             $token = $karyawan->createToken('karyawan-token')->plainTextToken;

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -11,8 +12,7 @@ class karyawanSeeder extends Seeder
     public function run()
     {
 
-
-        DB::table('karyawan')->insert([
+        $data = [
             [
                 'nama' => 'Tri Wanto Ardi Wibawa',
                 'nik' => '3316112011770003',
@@ -143,6 +143,15 @@ class karyawanSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
-        ]);
+        ];
+        // DB::table('karyawan')->insert();
+        $hashedData = collect($data)->map(function ($item) {
+            $item['password'] = Hash::make($item['password']);
+            $item['created_at'] = Carbon::now();
+            $item['updated_at'] = Carbon::now();
+            return $item;
+        })->toArray();
+
+        DB::table('karyawan')->insert($hashedData);
     }
 }

@@ -14,13 +14,17 @@ return new class extends Migration
         // Schema::dropIfExists('profiles');
         Schema::create('profiles', function (Blueprint $table) {
             $table->id();
-            $table->string('headline');
+            $table->text('headline');
             $table->text('main_description');
             $table->text('recent_project_desc');
             $table->text('about_desc');
+            $table->text('visi');
+            $table->text('misi');
             $table->string('nama_kantor');
             $table->string('nomor_hp');
             $table->string('email')->unique();
+            $table->string('facebook')->unique();
+            $table->string('instagram')->unique();
             $table->string('website_url')->nullable();
             $table->timestamps();
         });

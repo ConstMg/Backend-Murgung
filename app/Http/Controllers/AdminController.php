@@ -14,8 +14,9 @@ use App\Http\Resources\AllKaryawanResource;
 use App\Http\Resources\KaryawanResource;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
+use Illuminate\Support\Facades\Hash;
 
-
+use Illuminate\Support\Facades\Log;
 
 
 class AdminController
@@ -122,8 +123,7 @@ class AdminController
                 'divisi'      => $request->divisi,
                 'penempatan'  => $request->penempatan,
                 'email'       => $request->email,
-                'password'    => $request->password
-
+                'password'    => Hash::make($request->password),
             ]);
 
             return response()->json([
@@ -154,7 +154,7 @@ class AdminController
         //     'akses' => 'required|in:admin'
         // ]);
 
-
+        Log::info('BODY REQUEST:', $request->all());
 
         $karyawan = Karyawan::find($id);
 
@@ -171,9 +171,13 @@ class AdminController
             'divisi'     => 'sometimes|required|string|max:100',
             'penempatan' => 'sometimes|required|string|max:100',
             'email'      => 'sometimes|required|email|ends_with:@constmg.com|unique:karyawan,email,' . $id,
-            // 'role'       => 'sometimes|required|in:karyawan,admin'
-            'password'   => 'sometimes|required|string|min:6',
+            'password'   => 'nullable|string|min:6', // ubah jadi nullable, bukan required
         ]);
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
 
 
         // Jika password dikirim, bisa di-hash dulu jika perlu
@@ -304,6 +308,7 @@ class AdminController
     public function updateProject(Request $request, $id)
     {
         // Cari project berdasarkan ID
+        Log::info('BODY REQUEST:', $request->all());
         $project = Project::find($id);
 
         if (!$project) {

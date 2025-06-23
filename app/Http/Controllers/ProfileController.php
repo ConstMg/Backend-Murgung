@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Profile;
 use Illuminate\Http\Request;
 use App\Models\CloudinaryImage;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController
 {
@@ -118,6 +119,7 @@ class ProfileController
     // Perbarui data profile (satu-satunya baris)
     public function update(Request $request)
     {
+        Log::info('BODY REQUEST:', $request->all());
         $profile = Profile::first();
 
         if (!$profile) {
@@ -125,14 +127,20 @@ class ProfileController
         }
 
         $validated = $request->validate([
-            'headline'             => 'sometimes|required|string|max:255',
+            'headline' => 'sometimes|required|array',
+            'headline.*' => 'string|max:255', // validasi setiap elemen array
             'main_description'     => 'sometimes|required|string',
             'recent_project_desc'  => 'sometimes|required|string',
             'about_desc'           => 'sometimes|required|string',
+            'visi' => 'sometimes|required|string',
+            'misi' => 'sometimes|required|string',
+
             'nama_kantor'          => 'sometimes|required|string|max:255',
             'nomor_hp'             => 'sometimes|required|string|max:20',
             'email'                => 'sometimes|required|email',
-            'website_url'          => 'nullable|url',
+            'website_url'          => 'nullable|string',
+            'facebook'             => 'sometimes|required|string',
+            'instagram'            => 'sometimes|required|string',
         ]);
 
         $profile->update($validated);
