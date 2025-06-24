@@ -19,7 +19,25 @@ class PresensiController
             'longitude' => 'required|numeric|between:-180,180',
             'status_presensi' => 'nullable|in:Hadir,Izin,Sakit,Alpa',
             'deskripsi' => 'nullable|string',
-            'gambar' => 'nullable|image|max:2048',
+            'gambar' => 'required_if:status_presensi,Izin,Sakit|file|image|max:2048',
+        ], [
+            'nama.required' => 'Nama wajib diisi.',
+            'nama.string' => 'Nama harus berupa teks.',
+            'nama.max' => 'Nama maksimal 255 karakter.',
+
+            'latitude.required' => 'Lokasi latitude wajib diisi.',
+            'latitude.numeric' => 'Latitude harus berupa angka.',
+            'latitude.between' => 'Latitude harus antara -90 sampai 90.',
+
+            'longitude.required' => 'Lokasi longitude wajib diisi.',
+            'longitude.numeric' => 'Longitude harus berupa angka.',
+            'longitude.between' => 'Longitude harus antara -180 sampai 180.',
+
+            'status_presensi.in' => 'Status presensi harus salah satu dari Hadir, Izin, Sakit, atau Alpa.',
+
+            'gambar.required_if' => 'Gambar bukti wajib diunggah jika status presensi adalah Izin atau Sakit.',
+            'gambar.image' => 'File yang diunggah harus berupa gambar.',
+            'gambar.max' => 'Ukuran gambar maksimal 2MB.',
         ]);
 
         $karyawan = Karyawan::where('nama', $request->nama)->first();
