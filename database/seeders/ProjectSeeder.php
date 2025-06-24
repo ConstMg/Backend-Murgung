@@ -73,7 +73,7 @@ class ProjectSeeder extends Seeder
                 'name' => 'Project Bias Selaras',
                 'pemberi_kerja' => 'PT. Bias Tekno Art Kreasindo',
                 'tanggal_dimulai_proyek' => '0001-01-01',
-                'tanggal_selesai_proyek' => '0001-01-01',
+                'tanggal_selesai_proyek' => '0001-01-01', // Contoh tanggal tidak valid/kosong
                 'kategori' => 'gedung',
                 'nilai_kontrak' => 365000000,
                 'deskripsi' => "Partisi Kaca"
@@ -154,7 +154,7 @@ class ProjectSeeder extends Seeder
                 'name' => 'Project Pegadaian Bojongherang',
                 'pemberi_kerja' => 'PT. Pesonna Indah Jaya ',
                 'tanggal_dimulai_proyek' => '0001-01-01',
-                'tanggal_selesai_proyek' => '0001-01-01',
+                'tanggal_selesai_proyek' => '0001-01-01', // Contoh tanggal tidak valid/kosong
                 'kategori' => 'other',
                 'nilai_kontrak' => 21421224,
                 'deskripsi' => "Pengadaan Pintu Kaca Double Swing dan Partisi Kaca\r\n"
@@ -324,9 +324,26 @@ class ProjectSeeder extends Seeder
         ];
 
         foreach ($projects as $project) {
+            // -- LOGIKA PENAMBAHAN STATUS DIMULAI DI SINI --
+
+            // 1. Cek jika 'tanggal_selesai_proyek' ada dan nilainya bukan '0001-01-01'.
+            //    Ini untuk menangani kasus dimana tanggalnya belum di-set.
+            if (isset($project['tanggal_selesai_proyek']) && $project['tanggal_selesai_proyek'] !== '0001-01-01') {
+                $status = 'Selesai';
+            } else {
+                $status = 'On Progress';
+            }
+
+            // 2. Tambahkan key 'status' ke dalam array project saat ini.
+            $project['status'] = $status;
+
+            // -- LOGIKA PENAMBAHAN STATUS SELESAI --
+
+            // 3. Lanjutkan proses update atau create dengan data project yang sudah dimodifikasi.
+            //    Array $project sekarang sudah berisi key 'status' dengan nilai yang benar.
             Project::updateOrCreate(
                 ['name' => $project['name']], // syarat pencarian
-                $project                      // data yang diupdate/dibuat
+                $project                       // data yang diupdate/dibuat
             );
         }
     }

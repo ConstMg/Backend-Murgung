@@ -31,7 +31,7 @@ Pengalaman dalam berbagai proyek yang beraneka ragam dan keberhasilan kami dalam
             'email'                => 'murgungnusaparama@gmail.com',
             'website_url'          => 'https://murgung.id',
             'facebook'             => 'https://web.facebook.com/murgung.id',
-            'instagram'            => 'www.instagram.com/murgungindonesia/',
+            'instagram'            => 'https://www.instagram.com/murgungindonesia/',
         ]);
     }
 }

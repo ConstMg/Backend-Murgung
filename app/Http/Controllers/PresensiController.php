@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Karyawan;
 use App\Models\Presensi;
 use Carbon\Carbon;
+use Cloudinary\Cloudinary;
+use Cloudinary\Api\Exception\ApiError;
 
 class PresensiController
 {
@@ -15,16 +17,16 @@ class PresensiController
             'nama' => 'required|string|max:255',
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
-            'status_presensi' => 'nullable|in:Hadir,Izin,Sakit,Alpa', // hanya diperlukan untuk masuk
+            'status_presensi' => 'nullable|in:Hadir,Izin,Sakit,Alpa',
             'deskripsi' => 'nullable|string',
+            'gambar' => 'nullable|image|max:2048',
         ]);
 
         $karyawan = Karyawan::where('nama', $request->nama)->first();
-
         if (!$karyawan) {
             return response()->json(['message' => 'Karyawan tidak ditemukan.'], 404);
+            return response()->json(['message' => 'Karyawan tidak ditemukan.'], 404);
         }
-
 
         $tanggal = Carbon::today('Asia/Jakarta')->toDateString();
         $now = Carbon::now('Asia/Jakarta')->format('H:i:s');
@@ -33,10 +35,7 @@ class PresensiController
             ->where('tanggal', $tanggal)
             ->first();
 
-
-
         if (!$presensi) {
-            // Belum presensi hari ini → presensi masuk
             if (!$request->status_presensi) {
                 return response()->json(['message' => 'Status presensi wajib diisi saat presensi masuk.'], 422);
             }
@@ -50,14 +49,38 @@ class PresensiController
             $presensi->latitude = $request->latitude;
             $presensi->longitude = $request->longitude;
             $presensi->deskripsi = $request->deskripsi;
+
+            // Jika ada gambar, upload ke Cloudinary
+            if ($request->hasFile('gambar') && $request->file('gambar')->isValid()) {
+                $file = $request->file('gambar');
+                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $publicId = "presensi/{$karyawan->nama}/{$tanggal}_{$originalName}";
+
+                try {
+                    $cloudinary = new Cloudinary();
+
+                    $uploaded = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                        'folder' => "presensi/{$karyawan->nama}",
+                        'public_id' => "{$tanggal}_{$originalName}",
+                        'resource_type' => 'image',
+                        'overwrite' => false,
+                    ]);
+
+                    $presensi->gambar = $uploaded['secure_url'];
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'message' => 'Presensi berhasil dicatat, namun upload gambar gagal: ' . $e->getMessage()
+                    ], 200);
+                }
+            }
+
             $presensi->save();
 
-
-            // $status = ucfirst(strtolower($presensi->status_presensi)); // Kapital di awal (contoh: "Hadir", "Izin", dst)
-
-            return response()->json(['message' => "Presensi Anda dicatat sebaga " . $presensi->status_presensi . "."], 200);
+            return response()->json([
+                'message' => "Presensi Anda dicatat sebagai " . $presensi->status_presensi . ".",
+                'gambar_url' => $presensi->gambar,
+            ], 200);
         }
-
 
         if ($presensi->jam_keluar) {
             return response()->json(['message' => 'Anda sudah melakukan presensi masuk dan keluar pada hari ini.'], 409);
@@ -67,7 +90,6 @@ class PresensiController
             return response()->json(['message' => 'Presensi keluar tidak diperlukan karena status Anda adalah ' . $presensi->status_presensi . '.'], 403);
         }
 
-        // Sudah presensi masuk → presensi keluar
         $presensi->jam_keluar = $now;
         $presensi->save();
 

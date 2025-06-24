@@ -25,6 +25,7 @@ class ListPresensiKaryawanResource extends JsonResource
             'latitude'       => $this->latitude,
             'longitude'      => $this->longitude,
             'deskripsi'      => $this->deskripsi,
+            'gambar'         => $this->gambar,
         ];
     }
 }

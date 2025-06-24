@@ -29,6 +29,7 @@ class ProjectResource extends JsonResource
                     'secure_url' => $image->secure_url ?? '',
                 ];
             })->values(),
+            'status' => $this->status,
         ];
     }
 }

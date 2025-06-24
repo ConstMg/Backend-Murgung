@@ -307,8 +307,10 @@ class AdminController
 
     public function updateProject(Request $request, $id)
     {
-        // Cari project berdasarkan ID
+        // Logging body request
         Log::info('BODY REQUEST:', $request->all());
+
+        // Cari project berdasarkan ID
         $project = Project::find($id);
 
         if (!$project) {
@@ -340,14 +342,27 @@ class AdminController
             ]
         );
 
-        // Update project
-        $project->update($validated);
+        // Update nilai dari request ke model
+        $project->fill($validated);
+
+        // Cek dan update status proyek berdasarkan tanggal
+        // Tentukan status berdasarkan apakah tanggal selesai terisi atau tidak
+        if (!empty($request->tanggal_selesai_proyek)) {
+            $project->status = 'Selesai';
+        } else {
+            $project->status = 'On Progress';
+        }
+
+
+        // Simpan perubahan
+        $project->save();
 
         return response()->json([
-            'message' => "Project '{$project->nama_project}' berhasil diperbarui",
+            'message' => "Project '{$project->name}' berhasil diperbarui",
             'data' => $project
         ]);
     }
+
 
 
 
@@ -454,6 +469,14 @@ class AdminController
                 'kategori',
                 'nilai_kontrak',
             ]));
+
+            // Tentukan status berdasarkan apakah tanggal selesai terisi atau tidak
+            if (!empty($request->tanggal_selesai_proyek)) {
+                $project->status = 'Selesai';
+            } else {
+                $project->status = 'On Progress';
+            }
+
             $project->save();
 
             return response()->json([
@@ -466,7 +489,8 @@ class AdminController
                     'tanggal_dimulai_proyek' => $project->tanggal_dimulai_proyek,
                     'tanggal_selesai_proyek' => $project->tanggal_selesai_proyek,
                     'kategori' => $project->kategori,
-                    'nilai_kontrak' => $project->nilai_kontrak
+                    'nilai_kontrak' => $project->nilai_kontrak,
+                    'status' => $project->status,
                 ]
             ]);
         } catch (\Exception $e) {

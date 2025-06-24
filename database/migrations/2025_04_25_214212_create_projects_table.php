@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->string('pemberi_kerja')->nullable();
             $table->date('tanggal_dimulai_proyek')->nullable();
             $table->date('tanggal_selesai_proyek')->nullable();
+            $table->string('status')->default('On Progress');
             $table->string('kategori')->nullable();
             $table->unsignedBigInteger('nilai_kontrak')->nullable();
             $table->timestamps();
