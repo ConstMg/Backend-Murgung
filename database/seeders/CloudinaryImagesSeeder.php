@@ -38,7 +38,13 @@ class CloudinaryImagesSeeder extends Seeder
 
             foreach ($data['resources'] as $item) {
                 $assetFolder = $item['asset_folder'] ?? null;
-                $projectName = $assetFolder ? basename($assetFolder) : 'Uncategorized';
+
+                // Hanya proses gambar yang berada di folder 'dokumentasi_company_profile'
+                if (strpos($assetFolder, 'dokumentasi_company_profile') !== 0) {
+                    continue;
+                }
+
+                $projectName = basename($assetFolder);
 
                 // Cari atau buat project berdasarkan nama folder
                 $project = Project::firstOrCreate(['name' => $projectName]);
