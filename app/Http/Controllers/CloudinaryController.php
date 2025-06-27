@@ -2,18 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Http;
 use App\Models\CloudinaryImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-// use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-use CloudinaryLabs\CloudinaryLaravel\MediaUploader;
 use Cloudinary\Cloudinary;
 use Cloudinary\Api\Exception\ApiError;
 use App\Models\Project;
-
 use App\Http\Resources\ProjectResource;
-
 
 class CloudinaryController
 {
@@ -98,9 +93,6 @@ class CloudinaryController
         ]);
     }
 
-
-    // public function addAboutImages() {}
-
     /**
      * @unauthenticated
      */
@@ -148,7 +140,6 @@ class CloudinaryController
             'data' => ProjectResource::collection($projects),
         ]);
     }
-
 
     public function addImageToProject(Request $request)
     {
@@ -212,6 +203,7 @@ class CloudinaryController
             return response()->json(['message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
         }
     }
+
     /**
      * Menghapus gambar dari Cloudinary dan database.
      *

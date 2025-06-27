@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-// use App\Model\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
 use App\Models\Sanctum\PersonalAccessToken;
 use Dedoc\Scramble\Scramble;
@@ -32,6 +31,5 @@ class AppServiceProvider extends ServiceProvider
                     SecurityScheme::http('bearer')
                 );
             });
-        // Route::aliasMiddleware('check.admin', CheckAdminRole::class);
     }
 }

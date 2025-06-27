@@ -9,7 +9,6 @@ use App\Http\Resources\ListPresensiKaryawanResource;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
 use Cloudinary\Cloudinary;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\AllKaryawanResource;
 use App\Http\Resources\KaryawanResource;
 use App\Http\Resources\ProjectResource;
@@ -22,19 +21,6 @@ use Illuminate\Support\Facades\Log;
 class AdminController
 {
 
-    private function checkRole()
-    {
-        $user = Auth::user();
-
-
-        // Cek apakah user yang login memiliki role admin
-        if (!$user || $user->role !== 'admin') {
-            return response()->json(['message' => 'Akses ditolak.'], 403);
-        }
-        return null;
-    }
-    // public function getAllKaryawan(Request $request)
-    // Melihat semua karyawan
     /**
      * @authenticated
      * @group User Management
@@ -145,8 +131,6 @@ class AdminController
         }
     }
 
-
-
     // Update data karyawan
     public function updateKaryawan(Request $request, $id)
     {
@@ -197,10 +181,6 @@ class AdminController
     // Menghapus karyawan
     public function hapusKaryawan(Request $request, $id)
     {
-        // $request->validate([
-        //     'akses' => 'required|in:admin'
-        // ]);
-
 
         $karyawan = Karyawan::find($id);
 
@@ -215,13 +195,7 @@ class AdminController
 
     public function listPresensiSemuaKaryawan(Request $request)
     {
-        // $request->validate([
-        //     'akses' => 'required|in:admin'
-        // ]);
 
-        // if ($response = $this->checkRole()) {
-        //     return $response;
-        // };
         $request->validate([
             'nama' => 'nullable|string',
             'tanggal_awal' => 'nullable|date',
@@ -256,7 +230,6 @@ class AdminController
 
         // return response()->json($data, 200);
     }
-
 
     public function fetchProjects(Request $request)
     {
@@ -302,8 +275,6 @@ class AdminController
             'data' => ProjectResource::collection($projects),
         ]);
     }
-
-
 
     public function updateProject(Request $request, $id)
     {
@@ -406,25 +377,6 @@ class AdminController
         }
     }
 
-
-    // public function show(Request $request, $id)
-    // {
-    //     // $request->validate([
-    //     //     'akses' => 'required|in:admin'
-    //     // ]);
-
-
-    //     $karyawan = Karyawan::find($id);
-
-    //     if (!$karyawan) {
-    //         return response()->json(['message' => 'Karyawan tidak ditemukan.'], 404);
-    //     }
-
-    //     return response()->json([
-    //         'message' => 'Detail karyawan',
-    //         'data'    => $karyawan
-    //     ], 200);
-    // }
 
 
     //Project

@@ -9,18 +9,8 @@ use App\Models\Login;
 
 class KaryawanController
 {
-
     public function me(Request $request)
     {
         return response()->json($request->user());
-    }
-    // karyawan login
-
-
-
-    public function index()
-    {
-        $karyawan = Karyawan::all();
-        return response()->json($karyawan);
     }
 }

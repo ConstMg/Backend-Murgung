@@ -62,10 +62,6 @@ class AuthenticationController
         ], 401);
     }
 
-
-
-
-
     public function logout(Request $request)
     {
         // Hapus token bearer yang sedang digunakan

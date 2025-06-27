@@ -3,11 +3,6 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Foundation\Configuration\Routing;
-use Illuminate\Http\Middleware\HandleUnauthorizedJson;
-
-// use Illuminate\Http\Middleware\HandleCors;
-
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,10 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
-    $middleware->group('api', [
-        \App\Http\Middleware\HandleUnauthorizedJson::class,
-    ]);
-        // $middleware->append(\App\Http\Middleware\HandleUnauthorizedJson::class);
+        $middleware->group('api', [
+            \App\Http\Middleware\HandleUnauthorizedJson::class,
+        ]);
     })
 
     ->withExceptions(function (Exceptions $exceptions) {

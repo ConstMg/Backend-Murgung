@@ -8,21 +8,20 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CloudinaryController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthenticationController;
-
 use App\Http\Controllers\EmailController;
+
 // Public routes
 Route::post('/login', [AuthenticationController::class, 'login']);
 Route::get('/cloudinary/images', [CloudinaryController::class, 'fetchImageFromDb']);
 Route::get('/profile', [ProfileController::class, 'show']);
 Route::get('/projects', [CloudinaryController::class, 'fetchProjects']);
 Route::get('/profile/images', [ProfileController::class, 'getAboutImages']);
+Route::post('/send-email-home', [EmailController::class, 'sendMainPage']);
+
 // Routes for authenticated users (karyawan and others)
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthenticationController::class, 'logout']);
-
-    // User biasa (karyawan) routes
-    Route::get('/me', [KaryawanController::class, 'me']);
-
+    
     Route::prefix('karyawan')->group(function () {
         Route::post('/presensi', [PresensiController::class, 'presensi']);
         Route::get('/presensi/riwayat', [PresensiController::class, 'apiList']);
@@ -38,7 +37,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Presensi
         Route::get('/presensi', [AdminController::class, 'listPresensiSemuaKaryawan']);
-        // Route::get('/presensi', [PresensiController::class, 'getAllPresensi']);
 
         // Projects
         Route::post('/addProject', [AdminController::class, 'addProject']);
@@ -48,9 +46,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Profile management
         Route::patch('/profile', [ProfileController::class, 'update']);
-
         Route::post('/profile/images', [ProfileController::class, 'assignAboutImages']);
-
         Route::delete('/profile/images', [ProfileController::class, 'unassignAboutImage']);
 
 
@@ -63,4 +59,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 
-Route::post('/send-email-home', [EmailController::class, 'sendMainPage']);
+
+// User biasa (karyawan) routes
+Route::get('/me', [KaryawanController::class, 'me']);

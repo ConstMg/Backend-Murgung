@@ -17,7 +17,7 @@ class CloudinaryImage extends Model
                 'url',
                 'secure_url',
                 'project_id',
-                'profile_id',    // Pastikan ini ada!
+                'profile_id',
                 'image_type',
         ];
 

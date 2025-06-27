@@ -33,8 +33,6 @@ class ProfileController
         ]);
     }
 
-
-
     public function assignAboutImages(Request $request)
     {
 
@@ -68,7 +66,6 @@ class ProfileController
             'message' => 'Gambar About Us berhasil ditambahkan.'
         ]);
     }
-
 
     public function unassignAboutImage(Request $request)
     {

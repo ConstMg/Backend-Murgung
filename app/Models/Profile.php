@@ -10,9 +10,6 @@ class Profile extends Model
 
     protected $casts = [
         'headline' => 'array',
-        // Tambahkan ini jika kamu juga menyimpan sebagai array:
-        // 'visi' => 'array',
-        // 'misi' => 'array',
     ];
 
     protected $fillable = [
