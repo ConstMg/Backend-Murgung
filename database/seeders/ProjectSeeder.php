@@ -196,7 +196,7 @@ class ProjectSeeder extends Seeder
                 'deskripsi' => "Pekerjaan ACP Summarecon Emmerald Kerawang\r\n"
             ],
             [
-                'name' => 'Project TC & Asrama',
+                'name' => 'Project TC dan Asrama',
                 'pemberi_kerja' => 'PT. Tunas Agro Subur Kencana',
                 'tanggal_dimulai_proyek' => '2025-05-15',
                 'tanggal_selesai_proyek' => '2025-05-08',

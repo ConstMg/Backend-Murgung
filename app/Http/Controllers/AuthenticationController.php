@@ -25,10 +25,6 @@ class AuthenticationController
         // Cari karyawan berdasarkan email
         $karyawan = Karyawan::where('email', $request->email)->first();
 
-        // Cek apakah user ditemukan dan password cocok (HASHING)
-        // if ($karyawan && Hash::check($request->password, $karyawan->password)) {
-        //NO HASHING
-
         if ($karyawan && Hash::check($request->password, $karyawan->password)) {
 
             // Generate token
@@ -80,8 +76,6 @@ class AuthenticationController
             DB::table('logins')->where('id', $latestLogin->id)->delete();
         }
 
-        // Hapus session (kalau masih digunakan)
-        session()->forget('role');
 
         return response()->json([
             'message' => 'Logout berhasil dan token dihapus.'

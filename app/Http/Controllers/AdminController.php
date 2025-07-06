@@ -252,7 +252,9 @@ class AdminController
             ->when($kategori, function ($q) use ($kategori) {
                 $q->where('kategori', $kategori);
             })
-            ->orderBy('id', 'desc');
+            ->orderByRaw('ISNULL(tanggal_selesai_proyek) DESC')
+            ->orderBy('tanggal_selesai_proyek', 'desc');
+
 
         // Ambil semua atau dibatasi limit
         $projects = $limit ? $query->take($limit)->get() : $query->get();
@@ -290,11 +292,16 @@ class AdminController
                 'error' => 404
             ], 404);
         }
-
         // Validasi input dengan custom messages
         $validated = $request->validate(
             [
-                'name' => 'required|string|max:255',
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/^[^?&#\\\\\/%<>]*$/',
+                    'unique:projects,name,' . $id
+                ],
                 'deskripsi' => 'nullable|string',
                 'pemberi_kerja' => 'nullable|string',
                 'tanggal_dimulai_proyek' => 'nullable|date',
@@ -305,6 +312,8 @@ class AdminController
             [
                 'name.required' => 'Nama proyek wajib diisi.',
                 'name.max' => 'Nama proyek tidak boleh lebih dari 255 karakter.',
+                'name.regex' => 'Nama proyek tidak boleh mengandung karakter: ? & # \\ / % < >.',
+                'name.unique' => 'Nama proyek sudah digunakan, silakan pilih nama lain.',
                 'tanggal_dimulai_proyek.date' => 'Tanggal dimulai harus berupa tanggal yang valid.',
                 'tanggal_selesai_proyek.date' => 'Tanggal selesai harus berupa tanggal yang valid.',
                 'tanggal_selesai_proyek.after_or_equal' => 'Tanggal selesai tidak boleh lebih awal dari tanggal dimulai.',
@@ -312,6 +321,8 @@ class AdminController
                 'nilai_kontrak.min' => 'Nilai kontrak tidak boleh bernilai negatif.'
             ]
         );
+
+
 
         // Update nilai dari request ke model
         $project->fill($validated);
@@ -385,7 +396,12 @@ class AdminController
         $validator = Validator::make(
             $request->all(),
             [
-                'nama_project' => 'required|string|max:255',
+                'nama_project' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/^[^?&#\\\\\/%<>]*$/'
+                ],
                 'deskripsi' => 'nullable|string',
                 'pemberi_kerja' => 'nullable|string',
                 'tanggal_dimulai_proyek' => 'nullable|date',
@@ -396,6 +412,7 @@ class AdminController
             [
                 'nama_project.required' => 'Nama proyek wajib diisi.',
                 'nama_project.max' => 'Nama proyek tidak boleh lebih dari 255 karakter.',
+                'nama_project.regex' => 'Nama proyek tidak boleh mengandung karakter: ? & # \\ / % < >.',
                 'tanggal_dimulai_proyek.date' => 'Tanggal dimulai harus berupa tanggal yang valid.',
                 'tanggal_selesai_proyek.date' => 'Tanggal selesai harus berupa tanggal yang valid.',
                 'tanggal_selesai_proyek.after_or_equal' => 'Tanggal selesai tidak boleh lebih awal dari tanggal dimulai.',

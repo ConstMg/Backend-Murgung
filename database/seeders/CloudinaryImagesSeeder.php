@@ -44,7 +44,10 @@ class CloudinaryImagesSeeder extends Seeder
                     continue;
                 }
 
-                $projectName = basename($assetFolder);
+                $relativePath = str_replace('dokumentasi_company_profile/', '', $assetFolder);
+                $parts = explode('/', $relativePath);
+                $projectName = $parts[0]; // Ambil nama folder utama setelah 'dokumentasi_company_profile'
+
 
                 // Cari atau buat project berdasarkan nama folder
                 $project = Project::firstOrCreate(['name' => $projectName]);

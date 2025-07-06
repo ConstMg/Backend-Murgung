@@ -117,7 +117,7 @@ class CloudinaryController
             ->when($kategori, function ($q) use ($kategori) {
                 $q->where('kategori', $kategori);
             })
-            ->orderBy('id', 'desc');
+            ->orderBy('created_at', 'desc');
 
         // Ambil semua atau dibatasi limit
         $projects = $limit ? $query->take($limit)->get() : $query->get();

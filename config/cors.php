@@ -25,14 +25,16 @@ return [
         'https://const-mg.vercel.app',
         'https://front-end-const-mg.vercel.app',
         'https://frontend.constmg.murgung.id',
+        'https://constmg.murgung.id',
         'https://murgung.id',
     ],
 
 
 
     'allowed_origins_patterns' => [
-        '/^https:\/\/const-[a-z0-9]+-[a-z0-9-]+-projects\.vercel\.app$/', 
-        '/^https:\/\/front-end-const-[a-z0-9]+-herros27s-projects\.vercel\.app$/',],
+        '/^https:\/\/const-[a-z0-9]+-[a-z0-9-]+-projects\.vercel\.app$/',
+        '/^https:\/\/front-end-const-[a-z0-9]+-herros27s-projects\.vercel\.app$/',
+    ],
 
     'allowed_headers' => [
         'Content-Type',
@@ -40,9 +42,7 @@ return [
         'Authorization',
     ],
 
-    'exposed_headers' => [
-        
-    ],
+    'exposed_headers' => [],
 
     'max_age' => 3600, // Cache preflight request selama 1 jam (dalam detik)
 
