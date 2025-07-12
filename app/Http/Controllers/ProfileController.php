@@ -6,6 +6,7 @@ use App\Models\Profile;
 use Illuminate\Http\Request;
 use App\Models\CloudinaryImage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class ProfileController
 {
@@ -16,15 +17,15 @@ class ProfileController
     {
         $profile = Profile::findOrFail(1);
 
-        // Ambil semua gambar yang terkait profile ini
-        $images = $profile->aboutImages()->select('public_id', 'secure_url')->get();
+        $images = Cache::remember("profile_about_images", 3600, function () use ($profile) {
+            return $profile->aboutImages()->select('public_id', 'secure_url')->get();
+        });
 
-        // Cek apakah hasilnya kosong
         if ($images->isEmpty()) {
             return response()->json([
                 'message' => 'Tidak ada gambar yang terkait dengan profil.',
                 'data' => [],
-            ], 200); // atau 200 jika tidak ingin dianggap error
+            ], 200);
         }
 
         return response()->json([
@@ -35,13 +36,12 @@ class ProfileController
 
     public function assignAboutImages(Request $request)
     {
-
         $request->validate([
             'public_id' => 'required|array',
             'public_id.*' => 'exists:cloudinary_images,public_id',
         ]);
-        $profile = Profile::findOrFail(1);
 
+        $profile = Profile::findOrFail(1);
         $publicIds = $request->input('public_id');
 
         $count = CloudinaryImage::whereIn('public_id', $publicIds)->count();
@@ -51,7 +51,6 @@ class ProfileController
             ], 422);
         }
 
-        // Update gambar
         CloudinaryImage::whereIn('public_id', $publicIds)
             ->where(function ($query) use ($profile) {
                 $query->where('profile_id', '!=', $profile->id)
@@ -62,6 +61,9 @@ class ProfileController
                 'image_type' => 'about_us',
             ]);
 
+        // ❌ Invalidate cache
+        Cache::forget("profile_about_images");
+
         return response()->json([
             'message' => 'Gambar About Us berhasil ditambahkan.'
         ]);
@@ -69,42 +71,42 @@ class ProfileController
 
     public function unassignAboutImage(Request $request)
     {
-        // Validasi: bisa berupa array atau string
         $request->validate([
             'public_id' => ['required'],
         ]);
 
         $publicIds = $request->input('public_id');
 
-        // Jika input berupa string, ubah ke array agar proses sama
         if (is_string($publicIds)) {
             $publicIds = [$publicIds];
         } elseif (!is_array($publicIds)) {
             return response()->json(['message' => 'public_id harus berupa string atau array'], 422);
         }
 
-        // Validasi tiap public_id harus ada di DB
         $existsCount = CloudinaryImage::whereIn('public_id', $publicIds)->count();
         if ($existsCount !== count($publicIds)) {
             return response()->json(['message' => 'Beberapa public_id tidak ditemukan di database'], 422);
         }
 
-        // Update sekaligus
         CloudinaryImage::whereIn('public_id', $publicIds)->update([
             'profile_id' => null,
             'image_type' => null,
         ]);
 
+        // ❌ Invalidate cache
+        Cache::forget("profile_about_images");
+
         return response()->json(['message' => 'Gambar berhasil dihapus dari About Us']);
     }
 
-    // Ambil data profile (hanya satu baris)
     /**
      * @unauthenticated
      */
     public function show()
     {
-        $profile = Profile::first();
+        $profile = Cache::remember("profile_data", 3600, function () {
+            return Profile::first();
+        });
 
         if (!$profile) {
             return response()->json(['message' => 'Profil belum tersedia'], 404);
@@ -113,10 +115,10 @@ class ProfileController
         return response()->json($profile, 200);
     }
 
-    // Perbarui data profile (satu-satunya baris)
     public function update(Request $request)
     {
         Log::info('BODY REQUEST:', $request->all());
+
         $profile = Profile::first();
 
         if (!$profile) {
@@ -125,13 +127,12 @@ class ProfileController
 
         $validated = $request->validate([
             'headline' => 'sometimes|required|array',
-            'headline.*' => 'string|max:255', // validasi setiap elemen array
+            'headline.*' => 'string|max:255',
             'main_description'     => 'sometimes|required|string',
             'recent_project_desc'  => 'sometimes|required|string',
             'about_desc'           => 'sometimes|required|string',
-            'visi' => 'sometimes|required|string',
-            'misi' => 'sometimes|required|string',
-
+            'visi'                 => 'sometimes|required|string',
+            'misi'                 => 'sometimes|required|string',
             'nama_kantor'          => 'sometimes|required|string|max:255',
             'nomor_hp'             => 'sometimes|required|string|max:20',
             'email'                => 'sometimes|required|email',
@@ -142,6 +143,12 @@ class ProfileController
 
         $profile->update($validated);
 
-        return response()->json(['message' => 'Profil berhasil diperbarui', 'data' => $profile], 200);
+        // ❌ Invalidate cache
+        Cache::forget("profile_data");
+
+        return response()->json([
+            'message' => 'Profil berhasil diperbarui',
+            'data' => $profile
+        ], 200);
     }
 }

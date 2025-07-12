@@ -21,7 +21,7 @@ Route::post('/send-email-home', [EmailController::class, 'sendMainPage']);
 // Routes for authenticated users (karyawan and others)
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthenticationController::class, 'logout']);
-    
+
     Route::prefix('karyawan')->group(function () {
         Route::post('/presensi', [PresensiController::class, 'presensi']);
         Route::get('/presensi/riwayat', [PresensiController::class, 'apiList']);
