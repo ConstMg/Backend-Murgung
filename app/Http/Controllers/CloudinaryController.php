@@ -9,6 +9,9 @@ use Cloudinary\Cloudinary;
 use Cloudinary\Api\Exception\ApiError;
 use App\Models\Project;
 use App\Http\Resources\ProjectResource;
+use Illuminate\Support\Facades\Cache;
+
+use App\Helpers\CacheHelper;
 
 class CloudinaryController
 {
@@ -17,80 +20,73 @@ class CloudinaryController
      */
     public function fetchImageFromDb(Request $request)
     {
-        // Validasi input dari request
         $validated = $request->validate([
             'project_name' => 'nullable|string',
             'limit' => 'nullable|integer|min:1|max:100',
         ]);
 
-        // Ambil nilai dari hasil validasi, atau set default jika tidak tersedia
         $projectName = $validated['project_name'] ?? null;
         $limit = $validated['limit'] ?? 10;
 
-        // === Jika project_name tidak diisi, ambil project secara acak ===
-        if (!$projectName) {
-            $projectsWithImages = Project::whereHas('images')->with('images')->get();
 
-            if ($projectsWithImages->isEmpty()) {
+        $cacheKey = 'images:' . md5("project_name={$projectName}|limit={$limit}");
+        return Cache::remember($cacheKey, 3600, function () use ($cacheKey, $projectName, $limit) {
+            \App\Helpers\CacheHelper::registerImageCacheKey($cacheKey);
+            if (!$projectName) {
+                $projectsWithImages = Project::whereHas('images')->with('images')->get();
+
+                if ($projectsWithImages->isEmpty()) {
+                    return response()->json([
+                        'message' => 'Tidak ada project dengan gambar',
+                        'error' => 404
+                    ], 404);
+                }
+
+                $randomProjects = $projectsWithImages->random(min($limit, $projectsWithImages->count()));
+
+                $formatted = $randomProjects->map(fn($project) => [
+                    'project_id' => $project->id,
+                    'project_name' => $project->name,
+                    'images' => $project->images->map(fn($img) => [
+                        'public_id' => $img->public_id,
+                        'secure_url' => $img->secure_url,
+                    ])->values()
+                ])->values();
+
                 return response()->json([
-                    'message' => 'Tidak ada project dengan gambar',
+                    'message' => "Berhasil mengambil {$formatted->count()} project secara random",
+                    'data' => $formatted
+                ]);
+            }
+
+            $projects = Project::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($projectName) . '%'])
+                ->has('images')
+                ->with('images')
+                ->get();
+
+            if ($projects->isEmpty()) {
+                return response()->json([
+                    'message' => "Tidak ada project yang cocok dengan kata kunci '{$projectName}'",
                     'error' => 404
                 ], 404);
             }
 
-            $randomProjects = $projectsWithImages->random(min($limit, $projectsWithImages->count()));
+            $limitedProjects = $projects->shuffle()->take(min($limit, $projects->count()));
 
-            $formatted = $randomProjects->map(function ($project) {
-                return [
-                    'project_id' => $project->id,
-                    'project_name' => $project->name,
-                    'images' => $project->images->map(function ($img) {
-                        return [
-                            'public_id' => $img->public_id,
-                            'secure_url' => $img->secure_url,
-                        ];
-                    })->values()
-                ];
-            })->values();
-
-            return response()->json([
-                'message' => "Berhasil mengambil {$formatted->count()} project secara random",
-                'data' => $formatted
-            ]);
-        }
-
-        // === Jika project_name ada, cari berdasarkan keyword ===
-        $projects = Project::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($projectName) . '%'])
-            ->has('images')
-            ->with('images')
-            ->get();
-
-        if ($projects->isEmpty()) {
-            return response()->json([
-                'message' => "Tidak ada project yang cocok dengan kata kunci '{$projectName}'",
-                'error' => 404
-            ], 404);
-        }
-
-        $limitedProjects = $projects->shuffle()->take(min($limit, $projects->count()));
-
-        $formatted = $limitedProjects->map(function ($project) {
-            return [
+            $formatted = $limitedProjects->map(fn($project) => [
                 'project_id' => $project->id,
                 'project_name' => $project->name,
-                'images' => $project->images->map(function ($img) {
-                    return [
-                        'public_id' => $img->public_id,
-                        'secure_url' => $img->secure_url,
-                    ];
-                })->values()
-            ];
-        })->values();
+                'images' => $project->images->map(fn($img) => [
+                    'public_id' => $img->public_id,
+                    'secure_url' => $img->secure_url,
+                ])->values()
+            ])->values();
 
-        return response()->json([
-            'message' => "Berhasil mengambil {$formatted->count()} project yang mengandung '{$projectName}'",
-            'data' => $formatted
-        ]);
+            return response()->json([
+                'message' => "Berhasil mengambil {$formatted->count()} project yang mengandung '{$projectName}'",
+                'data' => $formatted
+            ]);
+        });
     }
 
     /**
@@ -98,7 +94,6 @@ class CloudinaryController
      */
     public function fetchProjects(Request $request)
     {
-        // Validasi input query
         $validated = $request->validate([
             'name' => 'nullable|string',
             'limit' => 'nullable|integer|min:1|max:100',
@@ -109,20 +104,20 @@ class CloudinaryController
         $limit = $validated['limit'] ?? null;
         $kategori = $validated['kategori'] ?? null;
 
-        // Query project dengan relasi gambar
-        $query = Project::with('images')
-            ->when($name, function ($q) use ($name) {
-                $q->where('name', 'like', '%' . $name . '%');
-            })
-            ->when($kategori, function ($q) use ($kategori) {
-                $q->where('kategori', $kategori);
-            })
-            ->orderBy('created_at', 'desc');
 
-        // Ambil semua atau dibatasi limit
-        $projects = $limit ? $query->take($limit)->get() : $query->get();
 
-        // Jika tidak ada data
+        $cacheKey = 'projects:' . md5("name={$name}|kategori={$kategori}|limit={$limit}");
+
+        $projects = Cache::remember($cacheKey, 3600, function () use ($cacheKey, $name, $limit, $kategori) {
+            \App\Helpers\CacheHelper::registerProjectCacheKey($cacheKey);
+            $query = Project::with('images')
+                ->when($name, fn($q) => $q->where('name', 'like', '%' . $name . '%'))
+                ->when($kategori, fn($q) => $q->where('kategori', $kategori))
+                ->orderBy('created_at', 'desc');
+
+            return $limit ? $query->take($limit)->get() : $query->get();
+        });
+
         if ($projects->isEmpty()) {
             return response()->json([
                 'message' => $name || $kategori
@@ -140,6 +135,7 @@ class CloudinaryController
             'data' => ProjectResource::collection($projects),
         ]);
     }
+
 
     public function addImageToProject(Request $request)
     {
@@ -195,6 +191,9 @@ class CloudinaryController
                 'project_id' => $project->id,
             ]);
 
+            // Cache::forget("projects");
+            CacheHelper::forgetAllProjectCaches();
+            CacheHelper::forgetAllImageCaches();
             return response()->json([
                 'message' => 'Gambar berhasil ditambahkan ke project',
                 'secure_url' => $uploaded['secure_url'],
@@ -241,7 +240,8 @@ class CloudinaryController
 
             // Hapus dari database
             CloudinaryImage::where('public_id', $request->public_id)->delete();
-
+            CacheHelper::forgetAllProjectCaches();
+            CacheHelper::forgetAllImageCaches();
             return response()->json([
                 'message' => 'Gambar berhasil dihapus dari Cloudinary dan database.',
             ]);
