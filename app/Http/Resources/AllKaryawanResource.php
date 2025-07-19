@@ -21,6 +21,7 @@ class AllKaryawanResource extends JsonResource
             'email' => $this->email,
             'password'   => $this->password,
             'role'   => $this->role,
+            'status' => $this->status,
             // tambahkan field lainnya jika perlu
         ];
     }

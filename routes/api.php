@@ -33,6 +33,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/karyawan', [AdminController::class, 'getAllKaryawan']);
         Route::post('/karyawan', [AdminController::class, 'tambahKaryawan']);
         Route::put('/karyawan/{id}', [AdminController::class, 'updateKaryawan']);
+        Route::patch('/karyawan/status/{id}', [AdminController::class, 'updateKaryawan']);
         Route::delete('/karyawan/{id}', [AdminController::class, 'hapusKaryawan']);
 
         // Presensi

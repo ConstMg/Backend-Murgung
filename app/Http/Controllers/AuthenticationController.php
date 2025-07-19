@@ -18,63 +18,74 @@ class AuthenticationController
      */
     public function login(Request $request)
     {
+        // Validasi input awal
         $request->validate([
             'email'    => 'required|email',
             'password' => 'required|min:8'
         ]);
 
+        // Konfigurasi Rate Limiter untuk mencegah brute force
         $maxAttempts = 5;
-        $decaySeconds = 120;
-
+        $decaySeconds = 120; // 2 menit
         $throttleKey = Str::transliterate(Str::lower($request->input('email')) . '|' . $request->ip());
 
         if (RateLimiter::tooManyAttempts($throttleKey, $maxAttempts)) {
             $seconds = RateLimiter::availableIn($throttleKey);
             return response()->json([
                 'message' => 'Terlalu banyak percobaan login. Silakan coba kembali dalam ' . $seconds . ' detik.'
-            ], 429);
+            ], 429); // 429 Too Many Requests
         }
 
+        // Ambil data karyawan berdasarkan email
         $karyawan = Karyawan::where('email', $request->email)->first();
 
+        // Pengecekan kredensial (email & password)
         if (!$karyawan || !Hash::check($request->password, $karyawan->password)) {
             RateLimiter::hit($throttleKey, $decaySeconds);
             $remaining = $maxAttempts - RateLimiter::attempts($throttleKey);
+            $message = 'Email atau password yang Anda masukkan salah.';
 
-            $message = 'Login gagal, silakan coba lagi.';
             if ($remaining > 0) {
                 $message .= ' Anda memiliki ' . $remaining . ' kesempatan lagi.';
-                return response()->json([
-                    'message' => $message
-                ], 402);
+            } else {
+                $message = "Percobaan login Anda sudah habis. Silakan coba lagi nanti!";
             }
 
-            return response()->json([
-                'message' => "Percobaan anda sudah habis silahkan coba lagi nanti!"
-            ], 402);
+            return response()->json(['message' => $message], 401); // 401 Unauthorized
         }
 
-        // Login sukses, reset percobaan
+        // ✨ PENGECEKAN STATUS AKUN ✨
+        // Tambahkan pengecekan ini setelah memastikan password benar
+        if ($karyawan->status == false) {
+            // Jangan hit rate limiter di sini agar user tahu akunnya nonaktif
+            return response()->json([
+                'message' => 'Login gagal. Akun Anda saat ini tidak aktif.'
+            ], 403); // 403 Forbidden
+        }
+
+
+        // Jika login berhasil, reset percobaan yang gagal
         RateLimiter::clear($throttleKey);
 
+        // Buat token otentikasi
         $token = $karyawan->createToken('karyawan-token')->plainTextToken;
 
+        // Catat riwayat login
         Login::create([
             'karyawan_id' => $karyawan->id,
             'email'       => $request->email,
             'waktu_login' => now(),
-            'created_at'  => now(),
-            'updated_at'  => now()
         ]);
 
+        // Kirim respons sukses beserta token dan data karyawan
         return response()->json([
             'message' => 'Login berhasil',
-            'token' => $token,
+            'token'   => $token,
             'karyawan' => [
-                'id' => $karyawan->id,
-                'nama' => $karyawan->nama,
+                'id'    => $karyawan->id,
+                'nama'  => $karyawan->nama,
                 'email' => $karyawan->email,
-                'role' => $karyawan->role,
+                'role'  => $karyawan->role,
             ]
         ]);
     }

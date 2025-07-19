@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('jabatan')->nullable();
             $table->string('role')->default('karyawan');
+            $table->boolean('status')->default(true); // true = Aktif, false = Tidak Aktif
             $table->timestamps();
         });
     }

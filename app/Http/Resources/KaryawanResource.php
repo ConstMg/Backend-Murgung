@@ -24,7 +24,8 @@ class KaryawanResource extends JsonResource
             'penempatan'  => $this->penempatan,
             'email'       => $this->email,
             'role'        => $this->role,
-            'created_at'  => $this->created_at,
+            'status'      => $this->status,
+            
         ];
     }
 }

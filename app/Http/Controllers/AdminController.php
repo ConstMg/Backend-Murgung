@@ -134,47 +134,46 @@ class AdminController
     // Update data karyawan
     public function updateKaryawan(Request $request, $id)
     {
-        // $request->validate([
-        //     'akses' => 'required|in:admin'
-        // ]);
+        // Log request untuk debugging jika diperlukan
+        Log::info('BODY REQUEST UPDATE:', $request->all());
 
-        Log::info('BODY REQUEST:', $request->all());
-
+        // Cari karyawan berdasarkan ID
         $karyawan = Karyawan::find($id);
 
+        // Jika tidak ditemukan, kembalikan error 404
         if (!$karyawan) {
             return response()->json(['message' => 'Karyawan tidak ditemukan.'], 404);
         }
 
-        // Validasi hanya field yang dikirim
+        // Validasi hanya field yang dikirim dalam request
         $validated = $request->validate([
             'nama'       => 'sometimes|required|string|max:255',
-            'nik'        => 'sometimes|required|string|max:225',
+            'nik'        => 'sometimes|required|string|max:225|unique:karyawan,nik,' . $id,
             'jk'         => 'sometimes|required|in:Laki-Laki,Perempuan',
             'alamat'     => 'sometimes|required|string',
             'divisi'     => 'sometimes|required|string|max:100',
             'penempatan' => 'sometimes|required|string|max:100',
-            'email'      => 'sometimes|required|email|ends_with:@constmg.com|unique:karyawan,email,' . $id,
-            'password'   => 'nullable|string|min:6', // ubah jadi nullable, bukan required
+            'email'      => 'sometimes|required|email|unique:karyawan,email,' . $id,
+            'password'   => 'nullable|string|min:6', // Password opsional
+            'status'     => 'sometimes|required|boolean', // ✨ TAMBAHKAN INI: Validasi untuk status
         ]);
+
+        // Jika ada password baru, hash password tersebut
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
+            // Jika tidak ada password baru, hapus dari array agar tidak menimpa password lama
             unset($validated['password']);
         }
 
-
-        // Jika password dikirim, bisa di-hash dulu jika perlu
-        // if ($request->has('password')) {
-        //     $validated['password'] = bcrypt($request->password); // jika ingin hashing
-        // }
-
+        // Lakukan mass-assignment dengan data yang sudah divalidasi
         $karyawan->fill($validated);
-        $karyawan->save();
+        $karyawan->save(); // Simpan perubahan ke database
 
+        // Kembalikan respons sukses dengan data yang diperbarui
         return response()->json([
             'message' => 'Karyawan berhasil diperbarui.',
-            'data'    =>  new KaryawanResource($karyawan)
+            'data'    => new KaryawanResource($karyawan)
         ]);
     }
 
