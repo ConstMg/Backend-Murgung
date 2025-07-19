@@ -8,6 +8,7 @@ return [
      * If you need to change this behavior, you can add your custom routes resolver using `Scramble::routes()`.
      */
     'api_path' => 'api',
+     'path' => env('SCRAMBLE_DOCS_ENABLED', false) ? 'api/docs' : null,
 
     /*
      * Your API domain. By default, app domain is used. This is also a part of the default API routes
@@ -108,7 +109,7 @@ return [
 
     'middleware' => [
         'web',
-        // RestrictedDocsAccess::class,
+        RestrictedDocsAccess::class,
     ],
 
     'extensions' => [],
