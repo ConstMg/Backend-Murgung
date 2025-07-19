@@ -24,4 +24,4 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         # Path tujuan di server hosting Anda:
-        server-dir: /domains/constmg.murgung.id/public_html/
+        server-dir: /domains/constmg.murgung.id/public_html/backend
