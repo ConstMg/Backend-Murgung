@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const updateHash = function (id) {
         window.location.hash = `#${id}`;
     };
@@ -29,8 +29,8 @@ document.addEventListener('DOMContentLoaded', function() {
         searchSelector: '*OR',
         searchTag: '#input-search',
         contentTag: '#toc li',
-        didSearch: function(term) {
-            wrapper.classList.toggle('jets-searching', String(term).length > 0)
+        didSearch: function (term) {
+            wrapper.classList.toggle('jets-searching', String(term).length > 0);
         },
         // map these accent keys to plain values
         diacriticsMap: {
@@ -47,8 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
             t: 'ťŤ',
             u: 'ÙÚÛÜùúûüůŮŪū',
             y: 'ŸÿýÝ',
-            z: 'ŽžżŻźŹ'
-        }
+            z: 'ŽžżŻźŹ',
+        },
     });
 
     function hashChange() {
@@ -100,13 +100,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const newStyle = languages.map((language) => {
-            return language === newLanguage
-                // the current one should be visible
-                ? `body .content .${language}-example pre { display: block; }`
-                // the inactive one should be hidden
-                : `body .content .${language}-example pre { display: none; }`;
-        }).join(`\n`);
+        const newStyle = languages
+            .map((language) => {
+                return language === newLanguage
+                    ? // the current one should be visible
+                      `body .content .${language}-example pre { display: block; }`
+                    : // the inactive one should be hidden
+                      `body .content .${language}-example pre { display: none; }`;
+            })
+            .join(`\n`);
 
         Array.from(langSelector).forEach((elem) => {
             elem.classList.toggle('active', elem.getAttribute('data-language-name') === newLanguage);
@@ -135,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const divs = document.querySelectorAll('.content h1[id], .content h2[id]');
 
     document.addEventListener('scroll', () => {
-        divs.forEach(item => {
+        divs.forEach((item) => {
             const rect = item.getBoundingClientRect();
             if (rect.top > 0 && rect.top < 150) {
                 const location = window.location.toString().split('#')[0];

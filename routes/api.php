@@ -19,12 +19,12 @@ Route::get('/profile/images', [ProfileController::class, 'getAboutImages']);
 Route::post('/send-email-home', [EmailController::class, 'sendMainPage']);
 
 // Routes for authenticated users (karyawan and others)
-Route::middleware(['auth:sanctum','check.status.account'])->group(function () {
+Route::middleware(['auth:sanctum', 'check.status.account'])->group(function () {
     Route::post('/logout', [AuthenticationController::class, 'logout']);
-// User biasa (karyawan) routes
+    // User biasa (karyawan) routes
     Route::get('/me', [KaryawanController::class, 'me']);
     Route::put('/me/update', [KaryawanController::class, 'update']);
-     Route::put('/me/password', [KaryawanController::class, 'updatePassword']);
+    Route::put('/me/password', [KaryawanController::class, 'updatePassword']);
     Route::prefix('karyawan')->group(function () {
         Route::post('/presensi', [PresensiController::class, 'presensi']);
         Route::get('/presensi/riwayat', [PresensiController::class, 'apiList']);

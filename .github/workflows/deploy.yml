@@ -3,25 +3,25 @@ name: Deploy to FTP Server
 
 # Pemicu: dijalankan setiap kali ada push ke branch 'main'
 on:
-  push:
-    branches:
-      - main
+    push:
+        branches:
+            - main
 
 # Pekerjaan yang akan dilakukan
 jobs:
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest # Menggunakan server virtual dari GitHub
+    deploy:
+        name: Deploy
+        runs-on: ubuntu-latest # Menggunakan server virtual dari GitHub
 
-    steps:
-    - name: Get latest code
-      uses: actions/checkout@v3 # Langkah untuk mengambil kode dari repo
+        steps:
+            - name: Get latest code
+              uses: actions/checkout@v3 # Langkah untuk mengambil kode dari repo
 
-    - name: Deploy to FTP
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        # Path tujuan di server hosting Anda:
-        server-dir: /public_html/backend/
+            - name: Deploy to FTP
+              uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+              with:
+                  server: ${{ secrets.FTP_SERVER }}
+                  username: ${{ secrets.FTP_USERNAME }}
+                  password: ${{ secrets.FTP_PASSWORD }}
+                  # Path tujuan di server hosting Anda:
+                  server-dir: /public_html/backend/
