@@ -19,7 +19,7 @@ Route::get('/profile/images', [ProfileController::class, 'getAboutImages']);
 Route::post('/send-email-home', [EmailController::class, 'sendMainPage']);
 
 // Routes for authenticated users (karyawan and others)
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum','check.status.account'])->group(function () {
     Route::post('/logout', [AuthenticationController::class, 'logout']);
 // User biasa (karyawan) routes
     Route::get('/me', [KaryawanController::class, 'me']);
