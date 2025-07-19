@@ -31,7 +31,7 @@ class AdminController
         $karyawan = Karyawan::orderBy('id')->get();
 
         return response()->json([
-            'message' => 'Daftar semua karyawan',
+            'message' => 'Nih Daftar semua karyawan',
             'data' => AllKaryawanResource::collection($karyawan)
         ], 200);
     }
