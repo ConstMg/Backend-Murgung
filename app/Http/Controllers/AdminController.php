@@ -29,9 +29,14 @@ class AdminController
     {
 
         $karyawan = Karyawan::orderBy('id')->get();
-        // Jika tidak ada karyawan
+        if ($karyawan->isEmpty()) {
+            return response()->json([
+                'message' => 'Tidak ada karyawan yang ditemukan.',
+                'data' => []
+            ], 404);
+        }
         return response()->json([
-            'message' => 'Daftar semua karyawan',
+            'message' => 'Nih Daftar semua karyawan',
             'data' => AllKaryawanResource::collection($karyawan)
         ], 200);
     }
